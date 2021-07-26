@@ -1,0 +1,7 @@
+Add copy of paper
+Add storm-dependencies
+Add prophesy-dependencies
+Add storm/prophesy install
+Provide scripts with cmdline arguments
+Update README
+
