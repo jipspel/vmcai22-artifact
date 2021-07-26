@@ -1,7 +1,8 @@
 Add copy of paper
-Add storm-dependencies
-Add prophesy-dependencies
-Add storm/prophesy install
-Provide scripts with cmdline arguments
+Add storm-dependencies (with help of create artifact script)
+Add prophesy-dependencies (with help of create artifact script)
+Add storm/prophesy install scripts
+Add benchmarks
+Provide scripts with cmdline arguments to run all benchmarks
 Update README
 
