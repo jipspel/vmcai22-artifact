@@ -1,4 +1,4 @@
-# Artifact for submission TODO
+# Artifact for submission 12
 
 
 This is an artifact created for our VMCAI submission: _Linus Heck, Jip Spel, Sebastian Junges, Joost-Pieter Katoen and Joshua Moerman._ **Gradient-Descent for Randomized Controllers under Partial Observability**
@@ -14,48 +14,96 @@ The artifact contains:
  * paper.
 
 ## VM Requirements
-We recommend allocating at least **6GB RAM** for the VM if possible, and a decent amount of time for you.
+We recommend allocating at least **8GB RAM** for the VM if possible, and a decent amount of time for you.
 In our experiments, we set a time-out of two hours and used machines with an Intel Xeon Platinum 8160 CPU and 32GB of RAM.
 
 ## How to use the artifact
-The best starting point is the README.md file in this folder.  
-See *Replicating results of Storm* to replicate the results for gradient-descent. 
-See *Replicating results of QCQP/PSO* to replicate the results for the existing state-of-the-art feasibility methods.
+The best starting point is the README.md file in this folder. 
 
-## Replicating results of Storm
-All Benchmarks are located in the Benchmarks folder. 
-All Scripts are located in the Scripts folder.
-The Storm folder contains the source-code of storm and the compiled binaries.
+## Replicating results
+Before you can replicate the results, you should activate the python environment. To do so, use the terminal to go to the tools folder on the Desktop.
+```sh
+cd ~/Desktop/Tools
+```
+Now activate the environment
+```sh
+source env/bin/activate
+```
+Next go to the Benchmarks folder and follow one of the next sections.
+```sh
+cd ~/Desktop/Benchmarks
+```
 
+### Replicating results of all benchmarks/one benchmark
+#### Creating benchmarks
+One can generate benchmarks with the `generate_commands` script. The benchmarks are in
+`testcases-paper`, or `testcases-paper-twentypercent` and need to be
+passed to `--folder`. For example:
+```sh
+python3 generate_commands.py --folder testcases-paper
+```
+This will generate DTMCs from the POMDP files using `storm-pomdp`. You can look inside these
+folders, they are made of models and JSON configs for the benchmarks and should be relatively
+readable. 
+All test-cases are written to the `./build/testcases-paper`, or `./build/testcases-paper-twentypercent` folder.
+#### Creating test scenarios
+To invoke the test scenarios from the paper, you need to use `global-override` with the
+supplied json files. Furthermore, you can set the timeout (default is 1800s) with `--timeout`
+```sh
+python3 generate_commands.py --folder testcases-paper --global-override all_gd_methods.json --timeout 100
+```
+Invoking this script creates a `commands_all.sh` file.
+To run all commands: run the entire manual command file. **This is not recommended, as it will take a lot of time**
+To run one command: pick your favorite command from the manual command file.
 
-### Benchmarks
-All benchmarks (model files and properties) are located in the Benchmarks folder.
-The models are partially prism-files and partially drn-files.
+### Replicating subset of results.
+This part describes how to generate the benchmarks for a subset of the benchmarks.
+For all subsets, we consider a learning rate of 0.1. 
+Furthermore, we consider the following benchmarks: 4x4 grid-avoid, maze2, n2\_ps\_sent, sample_rocks.
+##### Figure 5
+The following GD methods are considered: Adam, Momentum-Sign.
+All region restriction methods are considered.
+##### Figure 6
+All GD methods are considered.
+The following region restriction method is considered: projection.
+##### Figure 7
+The following GD methods is considered: Momentum-Sign.
+The following regeion restriction method is considered: projection.
+For the twenty-percent bound, please use `testcases-paper-twentypercent`.
 
-### Running Storm
+#### Creating benchmarks
+One can generate benchmarks with the `generate_[fig5/fig6/fig7]_subset_commands.py` script. The benchmarks are in
+`testcases-paper` or `testcases-paper-twenteypercent` and need to be passed to `--folder`. For example:
+```sh
+python3 generate_fig5_subset_commands.py --folder testcases-paper
+```
+This will generate DTMCs from the POMDP files using `storm-pomdp`. You can look inside these
+folders, they are made of models and JSON configs for the benchmarks and should be relatively
+readable. 
+All test-cases are written to the `.build/[fig5/fig6/fig7]-testcases-paper` folder.
+#### Creating test scenarios
+To invoke the test scenarios from the paper, you need to use `global-override` with the
+supplied json files. Furthermore, you can set the timeout (default is 1800s) with `--timeout`
+```sh
+python3 generate_fig5_subset_commands.py --folder testcases-paper --global-override gd_methods_fig5.json
+```
+Invoking this script creates a `commands_subset_fig5.sh` file.
+You could either run the entire manual command file or pick a subset of the commands.
 
-#### Running all benchmarks
-All benchmarks can be run with the ./run_all.sh script. 
-However, we suggest you to run either one benchmark, or a subset of the benchmarks as a large amount of resources is needed to reproduce our result.
-
-#### Running one benchmark
+### Command structure gradient descent
 The structure of the command looks as follows:
 ```sh
 [path to storm-pars] --gradient-descent [--explicit-drn or --prism] [path to model] --prop [path to property] --core:eqsolver gmm++ --learning-rate [learning-rate] --descent-method [descent-method] --constraint-method [constraint-method]
 ```
 
 ##### Path to storm-pars
-The executable storm-pars can be found in the build/bin folder in storm.
+The executable storm-pars can be found in the `~Desktop/Tools/storm/build/bin` folder in storm.
 
 ##### Model type (drn or prism)
-The extension of the model (.drn or .prism) tells you whether you need to use --explicit-drn or --prism.
+The extension of the model (.drn or .prism) tells you whether you need to use `--explicit-drn` or `--prism`.
 
 ##### Path to model/property
-The model and property can be found in the Benchmarks folder.
-
-##### Equation solver
-We set the equation solver to gmm++, other options are:
-**TODO**
+The model and property can be found in the `~Desktop/Tools/Benchmarks/.build/*` folder.
 
 ##### Learning-rate
 The learning-rate can be set to any strict-positive value smaller than one.
@@ -78,7 +126,6 @@ Where the first three are adaptive gradient-descent method, and the others class
 ##### Constraint-method
 The constraint method (region restricition method) can be set to one of the following:
 * barrier-logarithmic
-* project
 * project-gradient
 * logistic-sigmoid
 
@@ -86,18 +133,26 @@ The constraint method (region restricition method) can be set to one of the foll
 ##### Other options
 Note that all possible options Storm provides can be found with the --help flag.
 
-Other helpfull options
-* -v sets the output to verbose.
+#### Command structure QCQP
+```sh
+python [path to prophesy]/scripts/parameter_synthesis.py load-problem [path to model] [path to property] set-threshold [threshold for property] find-feasible-instantiation --qcqp-handle-violation minimisation --qcqp-mc full --precheck-welldefinedness above qcqp 
+```
+#### Command structure PSO
+```sh
+python [path to prophesy]/scripts/parameter_synthesis.py load-problem [path to model] [path to property] set-threshold [threshold for property] find-feasible-instantiation --qcqp-handle-violation minimisation --qcqp-mc full --precheck-welldefinedness above pso
+```
 
 
-#### Running a subset of the benchmarks
-As a large amount of resources is needed to reproduce our result, we suggest you to use the subset script and run this over-night.
-
-
-##### Output
-
-
-## Replicating results of QCQP/PSO
-
-
-## Analyzing the results
+### Analyzing results
+Now, you probably have some ouput files. From this, you can generate a CSV file that contains the
+performance statistics using `process_output.py`. Just put the outputs into the arguments:
+```sh
+python3 process_output.py *.out
+```
+This will create an `out_*.csv*` file. The data csvs from the paper are in the `vmcai-paper-bench/` folder.
+From this, you can generate scatter plots using `csv_to_scatter.py`. E.g. for figure 5a use:
+```sh
+python csv_to_scatter.py vmcai-paper-bench/method_comparison.csv "momentum-sign" "momentum" "Momentum-Sign" "Momentum" --comp-field "Method" --filter "Add. Settings:Project with gradient" --output-pdf vmcai-paper-bench/pdfs/momentum-sign-vs-momentum.pdf --seperate-legend True
+```
+Look into `vmcai-paper-bench/paper_plots.sh` for the commands that are used to generate the plots from the
+paper.
